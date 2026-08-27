@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BLADE &amp; STEEL | Admin Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .neon-glow {
+            box-shadow: 0px 0px 12px rgba(255, 84, 80, 0.4);
+        }
+        .zebra-stripe div:nth-child(even) {
+            background-color: #141a24;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #101416;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #434957;
+            border-radius: 10px;
+        }
+        body {
+            background-color: #000000;
+            color: #e0e3e5;
+            overflow-x: hidden;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                "surface-variant": "#313537",
+                "inverse-primary": "#b91c24",
+                "surface-bright": "#363a3c",
+                "inverse-on-surface": "#2d3133",
+                "secondary-container": "#434957",
+                "surface-container": "#1c2022",
+                "on-primary-container": "#5c0008",
+                "on-error-container": "#ffdad6",
+                "outline-variant": "#5b403e",
+                "surface": "#101416",
+                "surface-container-low": "#181c1e",
+                "on-tertiary-fixed": "#1b1b1b",
+                "surface-container-lowest": "#0b0f10",
+                "error": "#ffb4ab",
+                "secondary-fixed-dim": "#c1c6d7",
+                "on-tertiary-container": "#2a2a2a",
+                "on-secondary": "#2a303d",
+                "on-background": "#e0e3e5",
+                "on-primary": "#68000a",
+                "secondary": "#c1c6d7",
+                "primary-fixed": "#ffdad7",
+                "tertiary-fixed": "#e2e2e2",
+                "surface-dim": "#101416",
+                "outline": "#aa8986",
+                "surface-tint": "#ffb3ad",
+                "on-primary-fixed": "#410004",
+                "primary-container": "#ff5450",
+                "surface-container-high": "#262b2c",
+                "on-tertiary": "#303030",
+                "primary": "#ffb3ad",
+                "on-error": "#690005",
+                "tertiary-container": "#919191",
+                "on-surface-variant": "#e4beba",
+                "primary-fixed-dim": "#ffb3ad",
+                "secondary-fixed": "#dde2f3",
+                "surface-container-highest": "#313537",
+                "on-secondary-fixed-variant": "#414754",
+                "on-tertiary-fixed-variant": "#474747",
+                "inverse-surface": "#e0e3e5",
+                "on-primary-fixed-variant": "#930013",
+                "on-secondary-fixed": "#161c27",
+                "tertiary-fixed-dim": "#c6c6c6",
+                "background": "#101416",
+                "on-surface": "#e0e3e5",
+                "tertiary": "#c6c6c6",
+                "on-secondary-container": "#b3b8c8",
+                "error-container": "#93000a"
+              },
+              "borderRadius": {
+                "DEFAULT": "0.125rem",
+                "lg": "0.25rem",
+                "xl": "0.5rem",
+                "full": "0.75rem"
+              },
+              "spacing": {
+                "margin-desktop": "48px",
+                "base": "8px",
+                "margin-mobile": "16px",
+                "container-max": "1440px",
+                "gutter": "24px"
+              },
+              "fontFamily": {
+                "body-md": ["Inter"],
+                "label-md": ["Inter"],
+                "headline-xl": ["Montserrat"],
+                "headline-lg-mobile": ["Montserrat"],
+                "label-sm": ["Inter"],
+                "headline-lg": ["Montserrat"],
+                "headline-md": ["Montserrat"],
+                "body-lg": ["Inter"]
+              },
+              "fontSize": {
+                "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                "headline-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+              }
+            }
+          }
+        }
+    </script>
+</head>
+<body class="dark font-body-md text-on-surface bg-background">
+<!-- TopNavBar (Shared Component) -->
+<nav class="fixed top-0 left-0 right-0 z-50 bg-surface border-b border-secondary-container h-16">
+<div class="flex justify-between items-center w-full px-margin-desktop h-full max-w-container-max mx-auto">
+<div class="flex items-center gap-8">
+<span class="font-headline-md text-headline-md font-black tracking-tighter text-primary">BLADE &amp; STEEL</span>
+<div class="hidden md:flex items-center gap-6">
+<a class="text-primary font-bold font-label-md text-label-md" href="#">Dashboard</a>
+<a class="text-on-surface-variant hover:bg-surface-variant transition-colors px-3 py-1 font-label-md text-label-md" href="#">Inventory</a>
+<a class="text-on-surface-variant hover:bg-surface-variant transition-colors px-3 py-1 font-label-md text-label-md" href="#">Marketing</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="bg-surface-container-lowest border border-secondary-container rounded-lg pl-10 pr-4 py-1.5 focus:border-primary focus:ring-0 text-label-md font-label-md w-64" placeholder="Search data..." type="text"/>
+</div>
+<button class="material-symbols-outlined text-primary hover:bg-surface-variant p-2 transition-colors active:scale-95">notifications</button>
+<button class="material-symbols-outlined text-primary hover:bg-surface-variant p-2 transition-colors active:scale-95">settings</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-primary">
+<img class="w-full h-full object-cover" data-alt="A close-up professional headshot of a master barber with a sharp beard and tattoos, wearing a clean black industrial apron. The lighting is dramatic and moody, reflecting a high-end masculine barbershop environment with deep blacks and vibrant red accents in the background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDURutgk4A0i0fLjVbrGPVoDLcwrc5dqaM9cOgJ6C-JbgVTmstIsJ178ZRxV1OdmVQfJ5fhyn9HnTVRdnNggM2_PXWWQ5NGN8wVVn5f2LAgEc2hjeOyh7UgHT9N0erf-sP6JURs28kSlaGTbUHPq470fxw2p3t41TriqVdEK-ONujga4tI_9GBZcl7uzDD3TOs3rxgEkVY_U2YyyOYnks8uCtY6PMtZxfbw6zEOg9z7P3vtGihA33Q2OWg6lvhRp0OnGZeOY8Cm8Q"/>
+</div>
+</div>
+</div>
+</nav>
+<!-- SideNavBar (Shared Component) -->
+<aside class="fixed left-0 top-0 h-screen w-64 bg-surface-container border-r border-secondary-container hidden md:flex flex-col py-base pt-20 z-40">
+<div class="px-4 mb-8">
+<div class="flex items-center gap-3 mb-2">
+<div class="w-10 h-10 bg-primary-container flex items-center justify-center rounded-lg">
+<span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings: 'FILL' 1;">content_cut</span>
+</div>
+<div>
+<h2 class="font-label-md text-label-md text-on-surface leading-none">BLADE &amp; STEEL</h2>
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant mt-1">Industrial Management</p>
+</div>
+</div>
+<button class="w-full bg-primary text-on-primary font-bold py-2.5 rounded-lg mt-4 flex items-center justify-center gap-2 transition-all duration-200 hover:opacity-90 neon-glow active:scale-95">
+<span class="material-symbols-outlined text-[20px]">add</span>
+                New Appointment
+            </button>
+</div>
+<nav class="flex-1 flex flex-col px-2 overflow-y-auto custom-scrollbar">
+<a class="bg-primary text-on-primary font-bold rounded-lg my-1 mx-2 flex items-center gap-3 px-4 py-2.5 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-variant my-1 mx-2 flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-label-md text-label-md">Schedule</span>
+</a>
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-variant my-1 mx-2 flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-md text-label-md">Cuts &amp; Income</span>
+</a>
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-variant my-1 mx-2 flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-label-md text-label-md">Team</span>
+</a>
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-variant my-1 mx-2 flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined">military_tech</span>
+<span class="font-label-md text-label-md">Loyalty</span>
+</a>
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-variant my-1 mx-2 flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined">tune</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</nav>
+<div class="mt-auto px-2">
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-variant my-1 mx-2 flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-md text-label-md">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="md:ml-64 pt-24 px-margin-mobile md:px-margin-desktop pb-12 max-w-container-max">
+<!-- Welcome Header -->
+<header class="mb-gutter flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<h1 class="font-headline-xl text-headline-xl text-on-surface tracking-tighter uppercase">Operations Hub</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Wednesday, Oct 25 • Peak Performance Mode</p>
+</div>
+<div class="flex gap-3">
+<button class="bg-surface-container border border-secondary-container px-6 py-2.5 font-label-md text-label-md hover:bg-surface-variant transition-colors rounded-lg flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">analytics</span>
+                    View Reports
+                </button>
+<button class="bg-primary text-on-primary px-6 py-2.5 font-label-md text-label-md hover:opacity-90 neon-glow transition-all rounded-lg flex items-center gap-2 font-bold">
+<span class="material-symbols-outlined text-[20px]">person_add</span>
+                    Add Barber
+                </button>
+</div>
+</header>
+<!-- Queue Bar (Specialized Component) -->
+<div class="mb-gutter overflow-x-auto custom-scrollbar flex gap-4 pb-4">
+<div class="flex-shrink-0 bg-primary-container p-4 rounded-lg min-w-[200px] border border-primary">
+<span class="font-label-sm text-label-sm text-on-primary-container block mb-1 uppercase tracking-widest">In Chair Now</span>
+<div class="flex justify-between items-end">
+<p class="font-headline-md text-headline-md text-on-primary-container leading-none">Marcus R.</p>
+<span class="text-[10px] text-on-primary-container font-black">STATION 01</span>
+</div>
+</div>
+<div class="flex-shrink-0 bg-surface-container border border-secondary-container p-4 rounded-lg min-w-[200px]">
+<span class="font-label-sm text-label-sm text-on-surface-variant block mb-1 uppercase">Next: 10:30 AM</span>
+<div class="flex justify-between items-end">
+<p class="font-headline-md text-headline-md text-on-surface leading-none">James T.</p>
+<span class="text-[10px] text-on-surface-variant">FADE &amp; TRIM</span>
+</div>
+</div>
+<div class="flex-shrink-0 bg-surface-container border border-secondary-container p-4 rounded-lg min-w-[200px]">
+<span class="font-label-sm text-label-sm text-on-surface-variant block mb-1 uppercase">Next: 11:15 AM</span>
+<div class="flex justify-between items-end">
+<p class="font-headline-md text-headline-md text-on-surface leading-none">Elena W.</p>
+<span class="text-[10px] text-on-surface-variant">STYLING</span>
+</div>
+</div>
+<div class="flex-shrink-0 bg-surface-container border border-secondary-container p-4 rounded-lg min-w-[200px]">
+<span class="font-label-sm text-label-sm text-on-surface-variant block mb-1 uppercase">Next: 12:00 PM</span>
+<div class="flex justify-between items-end">
+<p class="font-headline-md text-headline-md text-on-surface leading-none">Chris K.</p>
+<span class="text-[10px] text-on-surface-variant">BEARD SCULPT</span>
+</div>
+</div>
+<div class="flex-shrink-0 bg-surface-container border border-secondary-container p-4 rounded-lg min-w-[200px] flex items-center justify-center opacity-50 border-dashed">
+<span class="material-symbols-outlined mr-2">add_circle</span>
+<span class="font-label-md text-label-md uppercase">Add Slot</span>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<!-- Total Revenue Chart (Large Column) -->
+<div class="md:col-span-8 bg-surface-container border border-secondary-container rounded-lg p-6 flex flex-col">
+<div class="flex justify-between items-start mb-8">
+<div>
+<h3 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest mb-1">Weekly Revenue</h3>
+<p class="font-headline-xl text-headline-xl text-primary leading-none tracking-tight">$14,582.40</p>
+<p class="text-on-surface-variant font-label-sm text-label-sm mt-2 flex items-center gap-1">
+<span class="material-symbols-outlined text-green-500 text-[16px]">trending_up</span>
+<span class="text-green-500 font-bold">+12.4%</span> vs last week
+                        </p>
+</div>
+<div class="flex bg-background rounded-lg p-1 border border-secondary-container">
+<button class="px-3 py-1 text-[12px] font-bold bg-secondary-container text-white rounded">7D</button>
+<button class="px-3 py-1 text-[12px] font-bold text-on-surface-variant">30D</button>
+</div>
+</div>
+<!-- Visualization Placeholder for Chart -->
+<div class="flex-1 min-h-[300px] relative mt-auto">
+<div class="absolute inset-0 flex items-end gap-2 px-2">
+<!-- Bar chart elements with hover interaction -->
+<div class="flex-1 bg-secondary-container h-[40%] rounded-t-sm hover:bg-primary transition-colors cursor-pointer group relative">
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-surface p-2 border border-secondary-container rounded hidden group-hover:block z-10">$1.2k</div>
+</div>
+<div class="flex-1 bg-secondary-container h-[65%] rounded-t-sm hover:bg-primary transition-colors cursor-pointer group relative">
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-surface p-2 border border-secondary-container rounded hidden group-hover:block z-10">$1.9k</div>
+</div>
+<div class="flex-1 bg-secondary-container h-[55%] rounded-t-sm hover:bg-primary transition-colors cursor-pointer group relative">
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-surface p-2 border border-secondary-container rounded hidden group-hover:block z-10">$1.6k</div>
+</div>
+<div class="flex-1 bg-primary h-[85%] rounded-t-sm hover:opacity-80 transition-colors cursor-pointer group relative neon-glow">
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-surface p-2 border border-secondary-container rounded hidden group-hover:block z-10">$2.4k</div>
+</div>
+<div class="flex-1 bg-secondary-container h-[45%] rounded-t-sm hover:bg-primary transition-colors cursor-pointer group relative">
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-surface p-2 border border-secondary-container rounded hidden group-hover:block z-10">$1.4k</div>
+</div>
+<div class="flex-1 bg-secondary-container h-[60%] rounded-t-sm hover:bg-primary transition-colors cursor-pointer group relative">
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-surface p-2 border border-secondary-container rounded hidden group-hover:block z-10">$1.8k</div>
+</div>
+<div class="flex-1 bg-secondary-container h-[50%] rounded-t-sm hover:bg-primary transition-colors cursor-pointer group relative">
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-surface p-2 border border-secondary-container rounded hidden group-hover:block z-10">$1.5k</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Team Performance (Small Column) -->
+<div class="md:col-span-4 bg-surface-container border border-secondary-container rounded-lg p-6">
+<h3 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest mb-6">Barber Performance</h3>
+<div class="space-y-4">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-lg bg-surface border border-secondary-container flex items-center justify-center font-bold text-primary">01</div>
+<div class="flex-1">
+<p class="font-label-md text-label-md text-on-surface">Alex "Blade" Mercer</p>
+<p class="text-[12px] text-on-surface-variant">14 Cuts today</p>
+</div>
+<div class="text-right">
+<p class="font-label-md text-label-md text-primary">$640</p>
+<p class="text-[10px] text-green-500 font-bold">+5%</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-lg bg-surface border border-secondary-container flex items-center justify-center font-bold text-on-surface-variant">02</div>
+<div class="flex-1">
+<p class="font-label-md text-label-md text-on-surface">Julian Rossi</p>
+<p class="text-[12px] text-on-surface-variant">12 Cuts today</p>
+</div>
+<div class="text-right">
+<p class="font-label-md text-label-md text-on-surface">$520</p>
+<p class="text-[10px] text-on-surface-variant font-bold">0%</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-lg bg-surface border border-secondary-container flex items-center justify-center font-bold text-on-surface-variant">03</div>
+<div class="flex-1">
+<p class="font-label-md text-label-md text-on-surface">Sarah Forge</p>
+<p class="text-[12px] text-on-surface-variant">9 Cuts today</p>
+</div>
+<div class="text-right">
+<p class="font-label-md text-label-md text-on-surface">$410</p>
+<p class="text-[10px] text-red-500 font-bold">-2%</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-lg bg-surface border border-secondary-container flex items-center justify-center font-bold text-on-surface-variant">04</div>
+<div class="flex-1">
+<p class="font-label-md text-label-md text-on-surface">Kobe Steele</p>
+<p class="text-[12px] text-on-surface-variant">7 Cuts today</p>
+</div>
+<div class="text-right">
+<p class="font-label-md text-label-md text-on-surface">$320</p>
+<p class="text-[10px] text-green-500 font-bold">+12%</p>
+</div>
+</div>
+</div>
+<button class="w-full mt-8 border border-secondary-container text-on-surface-variant py-2 font-label-sm text-label-sm uppercase hover:bg-surface-variant transition-colors rounded">View Full Leaderboard</button>
+</div>
+<!-- Recent Transactions / Cut List -->
+<div class="md:col-span-12 bg-surface-container border border-secondary-container rounded-lg overflow-hidden">
+<div class="p-6 border-b border-secondary-container flex justify-between items-center bg-surface-container-high">
+<h3 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest">Recent Activity</h3>
+<div class="flex gap-4">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary neon-glow"></span>
+<span class="text-[12px] text-on-surface-variant uppercase font-bold">Live Stream</span>
+</div>
+<button class="material-symbols-outlined text-on-surface-variant">filter_list</button>
+</div>
+</div>
+<div class="zebra-stripe">
+<!-- Row 1 -->
+<div class="flex items-center px-6 py-4 border-b border-secondary-container/50">
+<div class="w-12 text-[12px] font-black text-on-surface-variant">09:15</div>
+<div class="flex-1 flex items-center gap-4">
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px] text-on-primary-container" style="font-variation-settings: 'FILL' 1;">content_cut</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Premium Fade + Wash</p>
+<p class="text-[12px] text-on-surface-variant">Customer: David Chen • Barber: Alex M.</p>
+</div>
+</div>
+<div class="w-32">
+<span class="px-3 py-1 bg-surface-container-highest border border-secondary-container rounded-full text-[10px] font-bold text-white uppercase">Completed</span>
+</div>
+<div class="w-24 text-right font-headline-md text-headline-md text-on-surface">$55.00</div>
+</div>
+<!-- Row 2 -->
+<div class="flex items-center px-6 py-4 border-b border-secondary-container/50">
+<div class="w-12 text-[12px] font-black text-on-surface-variant">09:45</div>
+<div class="flex-1 flex items-center gap-4">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px] text-on-primary" style="font-variation-settings: 'FILL' 1;">face</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Hot Towel Shave</p>
+<p class="text-[12px] text-on-surface-variant">Customer: Mike Ross • Barber: Julian R.</p>
+</div>
+</div>
+<div class="w-32">
+<span class="px-3 py-1 bg-primary text-on-primary rounded-full text-[10px] font-bold uppercase neon-glow">In Chair</span>
+</div>
+<div class="w-24 text-right font-headline-md text-headline-md text-on-surface">$45.00</div>
+</div>
+<!-- Row 3 -->
+<div class="flex items-center px-6 py-4 border-b border-secondary-container/50">
+<div class="w-12 text-[12px] font-black text-on-surface-variant">10:00</div>
+<div class="flex-1 flex items-center gap-4">
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px] text-on-primary-container" style="font-variation-settings: 'FILL' 1;">content_cut</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Executive Scissor Cut</p>
+<p class="text-[12px] text-on-surface-variant">Customer: Robert H. • Barber: Alex M.</p>
+</div>
+</div>
+<div class="w-32">
+<span class="px-3 py-1 bg-surface-container-highest border border-secondary-container rounded-full text-[10px] font-bold text-white uppercase">Completed</span>
+</div>
+<div class="w-24 text-right font-headline-md text-headline-md text-on-surface">$75.00</div>
+</div>
+<!-- Row 4 -->
+<div class="flex items-center px-6 py-4">
+<div class="w-12 text-[12px] font-black text-on-surface-variant">10:15</div>
+<div class="flex-1 flex items-center gap-4">
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px] text-on-primary-container" style="font-variation-settings: 'FILL' 1;">cleaning_services</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Beard Sculpting</p>
+<p class="text-[12px] text-on-surface-variant">Customer: Liam O. • Barber: Sarah F.</p>
+</div>
+</div>
+<div class="w-32">
+<span class="px-3 py-1 bg-surface-container-highest border border-secondary-container rounded-full text-[10px] font-bold text-white uppercase">Waiting</span>
+</div>
+<div class="w-24 text-right font-headline-md text-headline-md text-on-surface">$35.00</div>
+</div>
+</div>
+</div>
+<!-- Shop Vitals (Asymmetric Cards) -->
+<div class="md:col-span-4 bg-surface-container border border-secondary-container rounded-lg p-6 flex flex-col justify-between min-h-[200px]">
+<div class="flex justify-between items-start">
+<h3 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest">Inventory Health</h3>
+<span class="material-symbols-outlined text-primary">warning</span>
+</div>
+<div>
+<p class="font-headline-lg text-headline-lg text-on-surface">Lather Soap <span class="text-error">Low</span></p>
+<div class="w-full bg-surface h-2 rounded-full mt-4 overflow-hidden">
+<div class="bg-error h-full w-[15%]"></div>
+</div>
+<p class="text-[12px] text-on-surface-variant mt-2">Only 2 units remaining. Reorder suggested.</p>
+</div>
+</div>
+<div class="md:col-span-4 bg-surface-container border border-secondary-container rounded-lg p-6 flex flex-col justify-between min-h-[200px]">
+<div class="flex justify-between items-start">
+<h3 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest">Customer Loyalty</h3>
+<span class="material-symbols-outlined text-primary">stars</span>
+</div>
+<div>
+<p class="font-headline-lg text-headline-lg text-on-surface">422 <span class="text-primary-container">Active</span></p>
+<p class="text-body-md text-body-md text-on-surface-variant mt-2">+18 New members this week</p>
+</div>
+</div>
+<div class="md:col-span-4 bg-primary text-on-primary rounded-lg p-6 flex flex-col justify-between min-h-[200px] relative overflow-hidden group cursor-pointer">
+<div class="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
+<span class="material-symbols-outlined text-[120px]">precision_manufacturing</span>
+</div>
+<div class="relative z-10">
+<h3 class="font-label-md text-label-md uppercase tracking-widest opacity-80">Quick Tool</h3>
+<p class="font-headline-lg text-headline-lg font-black mt-2">RUN SHOP REPORT</p>
+</div>
+<div class="relative z-10 flex items-center gap-2 font-bold uppercase text-[12px]">
+                    Generate PDF
+                    <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</div>
+</div>
+</div>
+</main>
+<!-- Contextual Micro-interactions and effects -->
+<script>
+        // Simple logic to show/hide sections or handle interactive states
+        document.querySelectorAll('a, button').forEach(el => {
+            el.addEventListener('mousedown', () => {
+                el.style.transform = 'scale(0.97)';
+            });
+            el.addEventListener('mouseup', () => {
+                el.style.transform = 'scale(1)';
+            });
+            el.addEventListener('mouseleave', () => {
+                el.style.transform = 'scale(1)';
+            });
+        });
+
+        // Dynamic Greeting (Atmospheric Effect)
+        window.onload = () => {
+            const header = document.querySelector('header p');
+            const hour = new Date().getHours();
+            let greeting = "Peak Performance Mode";
+            if (hour < 10) greeting = "Morning Shift Underway";
+            if (hour > 18) greeting = "Evening Rush Active";
+            header.innerHTML = `${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })} • ${greeting}`;
+        };
+    </script>
+</body></html>

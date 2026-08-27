@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#D4AF37"/>
+      <stop offset="25%" style="stop-color:#FBF5B7"/>
+      <stop offset="50%" style="stop-color:#B8860B"/>
+      <stop offset="75%" style="stop-color:#FBF5B7"/>
+      <stop offset="100%" style="stop-color:#D4AF37"/>
+    </linearGradient>
+  </defs>
+  <!-- Escudo circular Premium -->
+  <circle cx="50" cy="50" r="48" fill="#050505" stroke="url(#goldGrad)" stroke-width="2"/>
+  <!-- Silueta de Navaja estilizada (Detalle de oficio) -->
+  <path d="M30 40 Q50 35 70 40 L65 45 Q50 42 35 45 Z" fill="url(#goldGrad)" opacity="0.3"/>
+  <!-- Iniciales UB con peso visual -->
+  <text x="50%" y="54%" text-anchor="middle" dy=".35em" fill="url(#goldGrad)"
+        style="font-family: 'Arial Black', sans-serif; font-weight: 900; font-size: 36px; letter-spacing: -1px;">UB</text>
+  <!-- Subtítulo LP -->
+  <text x="50%" y="75%" text-anchor="middle" fill="url(#goldGrad)"
+        style="font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 10px; letter-spacing: 4px;" opacity="0.9">EL ALTO</text>
+  <!-- Borde punteado de precisión -->
+  <circle cx="50" cy="50" r="44" fill="none" stroke="url(#goldGrad)" stroke-width="0.5" stroke-dasharray="1 2" opacity="0.5"/>
+</svg>

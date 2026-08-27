@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #c5a059;
+  --color-surface: #000000;
+  --color-surface-variant: #0a0a0a;
+  --color-on-surface-variant: #ffffff;
+
+  --font-headline: "Montserrat", sans-serif;
+  --font-anton: "Anton", sans-serif;
+}
+
+:root {
+  --primary: #c5a059;
+  --bg: #000000;
+  --surface: #050505;
+}
+
+body {
+  background-color: var(--bg);
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+  margin: 0;
+}
+
+.font-headline { font-family: 'Montserrat', sans-serif; }
+.font-anton { font-family: 'Anton', sans-serif; }
+
+.neon-glow {
+  box-shadow: 0px 0px 20px rgba(197, 160, 89, 0.4), 0px 0px 40px rgba(197, 160, 89, 0.1);
+}
+
+.neon-text {
+  text-shadow: 0px 0px 10px rgba(197, 160, 89, 0.5), 0px 0px 20px rgba(197, 160, 89, 0.2);
+}
+
+.glass-card {
+  background: rgba(10, 10, 10, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+  border-color: rgba(197, 160, 89, 0.3);
+}
+
+.animate-fade {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Scrollbar personalizada */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(197, 160, 89, 0.2);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--primary); }

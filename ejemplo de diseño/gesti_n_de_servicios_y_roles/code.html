@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BLADE &amp; STEEL | Management &amp; Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .neon-glow {
+            box-shadow: 0px 0px 12px rgba(229, 62, 62, 0.4);
+        }
+        .zebra-striping div:nth-child(even) {
+            background-color: #141A24;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #101416;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #313537;
+            border-radius: 10px;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-variant": "#313537",
+                        "inverse-primary": "#b91c24",
+                        "surface-bright": "#363a3c",
+                        "inverse-on-surface": "#2d3133",
+                        "secondary-container": "#434957",
+                        "surface-container": "#1c2022",
+                        "on-primary-container": "#5c0008",
+                        "on-error-container": "#ffdad6",
+                        "outline-variant": "#5b403e",
+                        "surface": "#101416",
+                        "surface-container-low": "#181c1e",
+                        "on-tertiary-fixed": "#1b1b1b",
+                        "surface-container-lowest": "#0b0f10",
+                        "error": "#ffb4ab",
+                        "secondary-fixed-dim": "#c1c6d7",
+                        "on-tertiary-container": "#2a2a2a",
+                        "on-secondary": "#2a303d",
+                        "on-background": "#e0e3e5",
+                        "on-primary": "#68000a",
+                        "secondary": "#c1c6d7",
+                        "primary-fixed": "#ffdad7",
+                        "tertiary-fixed": "#e2e2e2",
+                        "surface-dim": "#101416",
+                        "outline": "#aa8986",
+                        "surface-tint": "#ffb3ad",
+                        "on-primary-fixed": "#410004",
+                        "primary-container": "#ff5450",
+                        "surface-container-high": "#262b2c",
+                        "on-tertiary": "#303030",
+                        "primary": "#ffb3ad",
+                        "on-error": "#690005",
+                        "tertiary-container": "#919191",
+                        "on-surface-variant": "#e4beba",
+                        "primary-fixed-dim": "#ffb3ad",
+                        "secondary-fixed": "#dde2f3",
+                        "surface-container-highest": "#313537",
+                        "on-secondary-fixed-variant": "#414754",
+                        "on-tertiary-fixed-variant": "#474747",
+                        "inverse-surface": "#e0e3e5",
+                        "on-primary-fixed-variant": "#930013",
+                        "on-secondary-fixed": "#161c27",
+                        "tertiary-fixed-dim": "#c6c6c6",
+                        "background": "#101416",
+                        "on-surface": "#e0e3e5",
+                        "tertiary": "#c6c6c6",
+                        "on-secondary-container": "#b3b8c8",
+                        "error-container": "#93000a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-desktop": "48px",
+                        "base": "8px",
+                        "margin-mobile": "16px",
+                        "container-max": "1440px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-xl": ["Montserrat"],
+                        "headline-lg-mobile": ["Montserrat"],
+                        "label-sm": ["Inter"],
+                        "headline-lg": ["Montserrat"],
+                        "headline-md": ["Montserrat"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md min-h-screen">
+<!-- Sidebar Navigation Shell -->
+<aside class="fixed left-0 top-0 h-screen w-64 bg-surface-container border-r border-secondary-container flex flex-col py-base transition-all duration-200 ease-in-out z-50">
+<div class="px-6 py-4 flex items-center gap-3">
+<div class="w-10 h-10 bg-primary-container flex items-center justify-center rounded">
+<span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings: 'FILL' 1;">content_cut</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-black text-primary leading-tight">BLADE &amp; STEEL</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant opacity-70">Industrial Management</p>
+</div>
+</div>
+<nav class="mt-8 flex-grow">
+<div class="space-y-1">
+<a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors mx-2 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors mx-2 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_today">calendar_today</span>
+<span class="font-label-md text-label-md">Schedule</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors mx-2 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span class="font-label-md text-label-md">Cuts &amp; Income</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors mx-2 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+<span class="font-label-md text-label-md">Team</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors mx-2 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="military_tech">military_tech</span>
+<span class="font-label-md text-label-md">Loyalty</span>
+</a>
+<!-- Active Tab: Settings -->
+<a class="flex items-center gap-3 px-6 py-3 bg-primary text-on-primary font-bold rounded-lg my-1 mx-2" href="#">
+<span class="material-symbols-outlined" data-icon="tune" style="font-variation-settings: 'FILL' 1;">tune</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</div>
+</nav>
+<div class="px-6 py-4">
+<button class="w-full py-3 bg-primary-container text-on-primary-container font-bold rounded neon-glow active:scale-95 duration-100 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+<span class="font-label-md">New Appointment</span>
+</button>
+</div>
+<div class="mt-auto border-t border-secondary-container pt-4">
+<a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors mx-2 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="font-label-md text-label-md">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-64 min-h-screen p-margin-desktop bg-surface">
+<!-- Header -->
+<header class="flex justify-between items-end mb-12">
+<div>
+<h2 class="font-headline-xl text-headline-xl text-on-surface tracking-tighter uppercase">Workshop Core</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mt-2">Manage the industrial engine of Blade &amp; Steel. Configure services, roles, and shop operations with surgical precision.</p>
+</div>
+<div class="flex gap-4">
+<button class="px-6 py-2 border border-secondary-container font-label-md text-on-surface hover:bg-surface-variant transition-colors">
+                    Back to Dashboard
+                </button>
+<button class="px-8 py-2 bg-inverse-primary text-on-surface font-black uppercase tracking-widest neon-glow">
+                    Save All Changes
+                </button>
+</div>
+</header>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Service List Management (7 Columns) -->
+<section class="col-span-8 bg-surface-container border border-secondary-container p-6 rounded-lg">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-label-md text-label-md text-primary tracking-widest uppercase">Service Inventory</h3>
+<button class="flex items-center gap-2 text-primary font-bold hover:underline">
+<span class="material-symbols-outlined text-sm" data-icon="add_circle">add_circle</span>
+                        Add New Service
+                    </button>
+</div>
+<div class="zebra-striping">
+<!-- Table Header -->
+<div class="grid grid-cols-12 gap-4 px-4 py-3 border-b border-secondary-container opacity-50">
+<div class="col-span-5 font-label-sm text-label-sm">SERVICE NAME</div>
+<div class="col-span-3 font-label-sm text-label-sm">DURATION</div>
+<div class="col-span-2 font-label-sm text-label-sm text-right">PRICE</div>
+<div class="col-span-2 font-label-sm text-label-sm text-right">ACTIONS</div>
+</div>
+<!-- Row 1: Haircut -->
+<div class="grid grid-cols-12 gap-4 px-4 py-4 items-center">
+<div class="col-span-5 flex items-center gap-3">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="content_cut">content_cut</span>
+<span class="font-headline-md text-headline-md">Industrial Haircut</span>
+</div>
+<div class="col-span-3">
+<input class="bg-surface border border-secondary-container text-on-surface px-3 py-1 w-24 focus:border-primary outline-none text-label-md font-label-md" type="text" value="45 MIN"/>
+</div>
+<div class="col-span-2 text-right">
+<input class="bg-surface border border-secondary-container text-on-surface px-3 py-1 w-24 focus:border-primary outline-none text-right text-label-md font-label-md" type="text" value="$35.00"/>
+</div>
+<div class="col-span-2 flex justify-end gap-3">
+<button class="p-2 hover:bg-surface-variant text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="edit">edit</span>
+</button>
+<button class="p-2 hover:bg-surface-variant text-on-surface-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</div>
+</div>
+<!-- Row 2: Beard Trim -->
+<div class="grid grid-cols-12 gap-4 px-4 py-4 items-center">
+<div class="col-span-5 flex items-center gap-3">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="face">face</span>
+<span class="font-headline-md text-headline-md">Beard Sculpt</span>
+</div>
+<div class="col-span-3">
+<input class="bg-surface border border-secondary-container text-on-surface px-3 py-1 w-24 focus:border-primary outline-none text-label-md font-label-md" type="text" value="25 MIN"/>
+</div>
+<div class="col-span-2 text-right">
+<input class="bg-surface border border-secondary-container text-on-surface px-3 py-1 w-24 focus:border-primary outline-none text-right text-label-md font-label-md" type="text" value="$25.00"/>
+</div>
+<div class="col-span-2 flex justify-end gap-3">
+<button class="p-2 hover:bg-surface-variant text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="edit">edit</span>
+</button>
+<button class="p-2 hover:bg-surface-variant text-on-surface-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</div>
+</div>
+<!-- Row 3: Combo -->
+<div class="grid grid-cols-12 gap-4 px-4 py-4 items-center">
+<div class="col-span-5 flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="auto_awesome" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<span class="font-headline-md text-headline-md">The Full Steel (Combo)</span>
+</div>
+<div class="col-span-3">
+<input class="bg-surface border border-secondary-container text-on-surface px-3 py-1 w-24 focus:border-primary outline-none text-label-md font-label-md" type="text" value="60 MIN"/>
+</div>
+<div class="col-span-2 text-right">
+<input class="bg-surface border border-secondary-container text-on-surface px-3 py-1 w-24 focus:border-primary outline-none text-right text-label-md font-label-md" type="text" value="$55.00"/>
+</div>
+<div class="col-span-2 flex justify-end gap-3">
+<button class="p-2 hover:bg-surface-variant text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="edit">edit</span>
+</button>
+<button class="p-2 hover:bg-surface-variant text-on-surface-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</div>
+</div>
+<!-- Row 4: Shave -->
+<div class="grid grid-cols-12 gap-4 px-4 py-4 items-center">
+<div class="col-span-5 flex items-center gap-3">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="razor">radar</span>
+<span class="font-headline-md text-headline-md">Straight Razor Shave</span>
+</div>
+<div class="col-span-3">
+<input class="bg-surface border border-secondary-container text-on-surface px-3 py-1 w-24 focus:border-primary outline-none text-label-md font-label-md" type="text" value="30 MIN"/>
+</div>
+<div class="col-span-2 text-right">
+<input class="bg-surface border border-secondary-container text-on-surface px-3 py-1 w-24 focus:border-primary outline-none text-right text-label-md font-label-md" type="text" value="$30.00"/>
+</div>
+<div class="col-span-2 flex justify-end gap-3">
+<button class="p-2 hover:bg-surface-variant text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="edit">edit</span>
+</button>
+<button class="p-2 hover:bg-surface-variant text-on-surface-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Role Management (4 Columns) -->
+<section class="col-span-4 space-y-gutter">
+<div class="bg-surface-container border border-secondary-container p-6 rounded-lg">
+<h3 class="font-label-md text-label-md text-primary tracking-widest uppercase mb-6">Staff Access &amp; Roles</h3>
+<div class="space-y-4">
+<!-- Admin -->
+<div class="flex items-center justify-between p-4 bg-surface border border-secondary-container rounded">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="admin_panel_settings">admin_panel_settings</span>
+<div>
+<p class="font-label-md text-label-md">Admin</p>
+<p class="text-xs text-on-surface-variant uppercase">Full Access</p>
+</div>
+</div>
+<span class="px-2 py-1 bg-primary text-on-primary text-[10px] font-bold tracking-tighter rounded">MASTER</span>
+</div>
+<!-- Barber -->
+<div class="flex items-center justify-between p-4 bg-surface border border-secondary-container rounded">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="hail">hail</span>
+<div>
+<p class="font-label-md text-label-md">Barber</p>
+<p class="text-xs text-on-surface-variant uppercase">Schedule &amp; Cuts Only</p>
+</div>
+</div>
+<button class="text-xs text-primary font-bold hover:underline">EDIT</button>
+</div>
+<!-- Customer -->
+<div class="flex items-center justify-between p-4 bg-surface border border-secondary-container rounded">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="person">person</span>
+<div>
+<p class="font-label-md text-label-md">Customer</p>
+<p class="text-xs text-on-surface-variant uppercase">Booking Only</p>
+</div>
+</div>
+<button class="text-xs text-primary font-bold hover:underline">EDIT</button>
+</div>
+</div>
+<button class="w-full mt-6 py-3 border border-dashed border-secondary-container text-on-surface-variant hover:text-on-surface hover:border-primary transition-all font-label-md text-label-md">
+                        + Create Custom Role
+                    </button>
+</div>
+<!-- Operating Hours -->
+<div class="bg-surface-container border border-secondary-container p-6 rounded-lg relative overflow-hidden">
+<div class="absolute top-0 right-0 p-2">
+<span class="material-symbols-outlined opacity-20 text-4xl" data-icon="schedule">schedule</span>
+</div>
+<h3 class="font-label-md text-label-md text-primary tracking-widest uppercase mb-6">Operating Hours</h3>
+<div class="space-y-3">
+<div class="flex justify-between items-center text-label-md">
+<span class="text-on-surface font-bold">Mon - Fri</span>
+<span class="text-on-surface-variant">09:00 - 20:00</span>
+</div>
+<div class="flex justify-between items-center text-label-md">
+<span class="text-on-surface font-bold">Saturday</span>
+<span class="text-on-surface-variant">08:00 - 18:00</span>
+</div>
+<div class="flex justify-between items-center text-label-md">
+<span class="text-error font-bold">Sunday</span>
+<span class="text-on-surface-variant italic">Closed</span>
+</div>
+</div>
+<button class="w-full mt-6 py-2 bg-surface-variant text-on-surface font-label-md text-label-md hover:bg-secondary-container transition-colors">
+                        Modify Schedule
+                    </button>
+</div>
+</section>
+<!-- General Shop Settings (4 Columns) -->
+<section class="col-span-4 bg-surface-container border border-secondary-container p-6 rounded-lg">
+<h3 class="font-label-md text-label-md text-primary tracking-widest uppercase mb-6">Shop Preferences</h3>
+<div class="space-y-6">
+<div>
+<label class="font-label-sm text-label-sm text-on-surface-variant block mb-2">SHOP NAME</label>
+<input class="w-full bg-surface-container-lowest border border-secondary-container text-on-surface px-4 py-3 focus:border-primary outline-none font-headline-md" type="text" value="BLADE &amp; STEEL - MAIN DISTRICT"/>
+</div>
+<div>
+<label class="font-label-sm text-label-sm text-on-surface-variant block mb-2">CURRENCY</label>
+<select class="w-full bg-surface-container-lowest border border-secondary-container text-on-surface px-4 py-3 focus:border-primary outline-none font-label-md appearance-none">
+<option>USD ($)</option>
+<option>EUR (€)</option>
+<option>GBP (£)</option>
+</select>
+</div>
+<div class="pt-4 border-t border-secondary-container">
+<div class="flex items-center justify-between mb-4">
+<div>
+<p class="font-label-md text-label-md">Auto-Confirm Bookings</p>
+<p class="text-xs text-on-surface-variant">Skip manual approval for regular clients</p>
+</div>
+<div class="w-12 h-6 bg-primary rounded-full relative flex items-center px-1">
+<div class="w-4 h-4 bg-on-primary rounded-full ml-auto"></div>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<div>
+<p class="font-label-md text-label-md">SMS Notifications</p>
+<p class="text-xs text-on-surface-variant">Send reminders 2h before cut</p>
+</div>
+<div class="w-12 h-6 bg-secondary-container rounded-full relative flex items-center px-1">
+<div class="w-4 h-4 bg-on-surface-variant rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Visual Atmosphere Component (8 Columns) -->
+<section class="col-span-8 h-64 relative rounded-lg overflow-hidden group">
+<div class="w-full h-full bg-cover bg-center" data-alt="A cinematic, high-contrast black and white photograph of a vintage industrial barber shop interior. The lighting is dramatic, with sharp shadows and bright neon accents in vibrant red. Chrome-plated barber chairs, exposed brick walls, and steel tools are visible, creating an atmosphere of raw masculinity and precision. The overall mood is premium, clean, and authoritative." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBCcPJM7_PWLNZHD5kLp5TcyYOR5oA1o9Wb6LkxK7uBAuS7EVH06Nly8Sv8_gse1J8UiA1lnnAZjsCJDOsDbUkbNL9J4OzQwc1caTb9pTFOgfue20D_6jmHlopDnU1gxr5g3MoZVcRgxS1eW2Nu9Be7GFL3JrWwgJtfC1z_4dOVHEuN7wHhW0R3zn2WmtcazRWLOxzsvCCtEmwqt7WKA3W6j4i0NI9smCZfVS37KBKsM7hFoiiNhDsKUHcWSJ7omBodcCuk3oKnWA')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface to-transparent opacity-80"></div>
+<div class="absolute bottom-6 left-6">
+<h4 class="font-headline-lg text-headline-lg text-on-surface tracking-tighter">PREMIUM CRAFTSMANSHIP</h4>
+<p class="font-label-md text-label-md text-primary tracking-widest uppercase">ESTABLISHED 2024</p>
+</div>
+<!-- Animated element placeholder -->
+<div class="absolute top-6 right-6">
+<div class="w-16 h-16 rounded-full border-2 border-primary border-t-transparent animate-spin"></div>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="verified" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Queue Bar (Floating) -->
+<div class="fixed bottom-0 right-0 left-64 bg-surface-container-high border-t border-secondary-container p-4 flex items-center gap-8 z-40">
+<div class="flex items-center gap-4 border-r border-secondary-container pr-8">
+<span class="font-label-sm text-label-sm text-primary uppercase tracking-widest">Live Queue</span>
+<span class="material-symbols-outlined text-primary animate-pulse" data-icon="fiber_manual_record" style="font-variation-settings: 'FILL' 1;">fiber_manual_record</span>
+</div>
+<div class="flex gap-6 overflow-x-auto no-scrollbar py-2">
+<!-- Queue Item 1 -->
+<div class="flex items-center gap-3 bg-surface p-2 pr-4 border border-secondary-container min-w-[200px]">
+<div class="text-primary font-black text-xl leading-none">14:00</div>
+<div class="h-8 w-[1px] bg-secondary-container"></div>
+<div>
+<div class="font-label-md text-label-md truncate max-w-[100px]">Marcus V.</div>
+<div class="text-[10px] text-on-surface-variant uppercase">Industrial Fade</div>
+</div>
+</div>
+<!-- Queue Item 2 -->
+<div class="flex items-center gap-3 bg-surface p-2 pr-4 border border-secondary-container min-w-[200px]">
+<div class="text-on-surface-variant font-black text-xl leading-none opacity-50">14:45</div>
+<div class="h-8 w-[1px] bg-secondary-container"></div>
+<div>
+<div class="font-label-md text-label-md truncate max-w-[100px]">Dimitri S.</div>
+<div class="text-[10px] text-on-surface-variant uppercase">Beard Sculpt</div>
+</div>
+</div>
+<!-- Queue Item 3 -->
+<div class="flex items-center gap-3 bg-surface p-2 pr-4 border border-secondary-container min-w-[200px]">
+<div class="text-on-surface-variant font-black text-xl leading-none opacity-50">15:30</div>
+<div class="h-8 w-[1px] bg-secondary-container"></div>
+<div>
+<div class="font-label-md text-label-md truncate max-w-[100px]">Julian K.</div>
+<div class="text-[10px] text-on-surface-variant uppercase">Full Steel</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+        // Simple micro-interaction for zebra row hovering
+        document.querySelectorAll('.zebra-striping .grid').forEach(row => {
+            row.addEventListener('mouseenter', () => {
+                row.classList.add('bg-surface-variant');
+            });
+            row.addEventListener('mouseleave', () => {
+                row.classList.remove('bg-surface-variant');
+            });
+        });
+    </script>
+</body></html>

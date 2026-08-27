@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "373733613218",
+    "firebase_url": "https://ubanbarberialp-default-rtdb.firebaseio.com",
+    "project_id": "ubanbarberialp",
+    "storage_bucket": "ubanbarberialp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:373733613218:android:a72102a58f99d1e29701fb",
+        "android_client_info": {
+          "package_name": "com.example.appmobil"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCuriUvT9mIbmoSFoUXgzO4yvqySugLles"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

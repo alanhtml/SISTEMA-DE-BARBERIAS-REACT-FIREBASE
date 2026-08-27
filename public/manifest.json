@@ -1,0 +1,17 @@
+{
+  "name": "Urban Barber LP | Operations Hub",
+  "short_name": "Urban Barber",
+  "description": "Sistema de gestión profesional para barberías con IA y fidelización VIP.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#d4af37",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
