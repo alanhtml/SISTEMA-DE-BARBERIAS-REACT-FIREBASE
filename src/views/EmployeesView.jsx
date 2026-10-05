@@ -58,7 +58,7 @@ export const EmployeesView = ({ db, addUser, updateUser, deleteUser, notify }) =
     return unique;
   }, [db?.users]);
 
-  const allCuts = db?.cuts || [];
+  const allCuts = useMemo(() => db?.cuts || [], [db?.cuts]);
 
   const setQuickRange = (mode) => {
     setFilterMode(mode);

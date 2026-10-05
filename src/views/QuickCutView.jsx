@@ -9,6 +9,7 @@ export const QuickCutView = ({ db, user, recordCut, notify }) => {
   });
   const [searchTerm, setSearchTerm] = useState('');
   const [isConfirming, setIsConfirming] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // FILTRO: Solo mostramos usuarios con rol "barbero"
   const barbers = useMemo(() => {
@@ -25,8 +26,9 @@ export const QuickCutView = ({ db, user, recordCut, notify }) => {
     return uniqueBarbers;
   }, [db?.users]);
 
+  // Ordenar precios de mayor a menor
   const services = useMemo(() => {
-    return [...(db?.services || [])].sort((a, b) => (parseFloat(a.price) || 0) - (parseFloat(b.price) || 0));
+    return [...(db?.services || [])].sort((a, b) => (parseFloat(b.price) || 0) - (parseFloat(a.price) || 0));
   }, [db?.services]);
   const filteredClients = searchTerm.length > 1
     ? db.clients.filter(c =>
@@ -37,6 +39,8 @@ export const QuickCutView = ({ db, user, recordCut, notify }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
     if (!formData.barberId || !formData.serviceId) {
       notify('Selecciona barbero y servicio', 'error');
       return;
@@ -48,17 +52,26 @@ export const QuickCutView = ({ db, user, recordCut, notify }) => {
       return;
     }
 
-    // Usar fecha local para evitar desfases de horario
-    const success = await recordCut({
-      ...formData,
-      date: new Date().toISOString()
-    });
+    try {
+      setIsSubmitting(true);
+      // Usar fecha local para evitar desfases de horario
+      const success = await recordCut({
+        ...formData,
+        date: new Date().toISOString()
+      });
 
-    if (success) {
-      setFormData({ barberId: '', clientId: 'visitor', serviceId: '' });
-      setSearchTerm('');
-      setIsConfirming(false);
-      notify('Servicio registrado correctamente');
+      if (success) {
+        setFormData({
+          barberId: user?.role === 'barbero' ? user.id : '',
+          clientId: 'visitor',
+          serviceId: ''
+        });
+        setSearchTerm('');
+        setIsConfirming(false);
+        notify('Servicio registrado correctamente');
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -126,10 +139,22 @@ export const QuickCutView = ({ db, user, recordCut, notify }) => {
 
             <Button
               type="submit"
+              disabled={isSubmitting || !formData.barberId || !formData.serviceId}
               variant={isConfirming ? 'danger' : 'primary'}
-              className={`w-full py-5 rounded-2xl font-black tracking-widest uppercase transition-all ${isConfirming ? 'animate-pulse scale-[1.02]' : ''}`}
+              className={`w-full py-5 rounded-2xl font-black tracking-widest uppercase transition-all ${
+                isConfirming && !isSubmitting ? 'animate-pulse scale-[1.02]' : ''
+              } ${isSubmitting ? 'opacity-60 cursor-not-allowed pointer-events-none' : ''}`}
             >
-              {isConfirming ? '¿Confirmar Registro?' : 'Registrar y Cobrar'}
+              {isSubmitting ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
+                  GUARDANDO REGISTRO...
+                </span>
+              ) : isConfirming ? (
+                '¿Confirmar Registro?'
+              ) : (
+                'Registrar y Cobrar'
+              )}
             </Button>
           </form>
         </div>

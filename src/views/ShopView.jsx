@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Button } from '../components/common/UI';
 
 export const ShopView = ({ db, sellProduct, notify }) => {
   const [sellingId, setSellingId] = useState(null);

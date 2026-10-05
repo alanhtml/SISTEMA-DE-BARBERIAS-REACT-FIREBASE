@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button, ConfirmDialog } from '../components/common/UI';
 
-export const ProductsView = ({ db, updateProduct, addProduct, deleteProduct, notify }) => {
+export const ProductsView = ({ db, updateProduct, addProduct, deleteProduct }) => {
   const [showModal, setShowModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [formData, setFormData] = useState({ name: '', stock: '', costPrice: '', salePrice: '', minStock: '2' });

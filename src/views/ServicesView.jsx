@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Button, Modal, Card, ConfirmDialog } from '../components/common/UI';
 
-export const ServicesView = ({ db, addTurn, addService, updateService, deleteService, updateDB, notify }) => {
+export const ServicesView = ({ db, addTurn, addService, updateService, deleteService, notify }) => {
   const [showTurnModal, setShowTurnModal] = useState(false);
   const [showServiceModal, setShowServiceModal] = useState(false);
   const [selectedService, setSelectedService] = useState(null);

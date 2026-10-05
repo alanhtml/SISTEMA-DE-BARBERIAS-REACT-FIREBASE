@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform, useSpring, AnimatePresence } from 'framer-motion';
 import Tilt from 'react-parallax-tilt';
 
 export const HomeView = ({ db, addTurn, notify, user }) => {
   const navigate = useNavigate();
-  const [isHovering, setIsHovering] = useState(false);
   const [showBooking, setShowBooking] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -18,17 +17,8 @@ export const HomeView = ({ db, addTurn, notify, user }) => {
     barberId: '',
     scheduledTime: ''
   });
-
-  useEffect(() => {
-    if (user) {
-      setBookingData(prev => ({
-        ...prev,
-        name: prev.name || user.name || '',
-        phone: prev.phone || user.phone || ''
-      }));
-    }
-  }, [user]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
 
   const barbers = useMemo(() => {
     return (db?.users || []).filter(u => u.role === 'barbero');
@@ -582,7 +572,7 @@ export const HomeView = ({ db, addTurn, notify, user }) => {
                             resetBooking();
                             window.open(whatsappUrl, '_blank');
                             notify('CITA REGISTRADA CORRECTAMENTE', 'success');
-                        } catch (err) {
+                        } catch (_err) {
                             notify('Error al procesar reserva', 'error');
                         } finally {
                             setIsSubmitting(false);

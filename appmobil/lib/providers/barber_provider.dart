@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class BarberProvider with ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -22,6 +24,7 @@ class BarberProvider with ChangeNotifier {
   StreamSubscription? _cutsSub;
   StreamSubscription? _servicesSub;
   StreamSubscription? _clientsSub;
+  StreamSubscription? _turnsSub;
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -37,8 +40,37 @@ class BarberProvider with ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final username = prefs.getString('saved_username');
     final password = prefs.getString('saved_password');
-    if (username != null && password != null) {
+    final loginType = prefs.getString('login_type');
+
+    if (loginType == 'google' && username != null) {
+      // Re-autenticar sesión previa de Google
+      _restoreGoogleUser(username);
+    } else if (username != null && password != null) {
       login(username, password, saveSession: false);
+    }
+  }
+
+  Future<void> _restoreGoogleUser(String email) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final snap = await _firestore.collection('users')
+          .where('username', isEqualTo: email.toLowerCase().trim())
+          .limit(1)
+          .get();
+
+      if (snap.docs.isNotEmpty) {
+        final doc = snap.docs.first;
+        _currentUser = Map<String, dynamic>.from(doc.data());
+        _currentUser!['docId'] = doc.id;
+        _currentUser!['id'] = (_currentUser!['id'] ?? _currentUser!['ID'] ?? doc.id).toString();
+        _startListeners();
+      }
+    } catch (_) {
+      // Sesión expirada o sin internet
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
@@ -47,22 +79,52 @@ class BarberProvider with ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
 
+    final cleanUser = username.trim();
+    final cleanPass = password.trim();
+
     try {
-      final snapshot = await _firestore.collection('users')
-          .where('username', isEqualTo: username)
-          .where('password', isEqualTo: password)
+      // 1. Consulta directa con username limpio
+      var snapshot = await _firestore.collection('users')
+          .where('username', isEqualTo: cleanUser)
+          .where('password', isEqualTo: cleanPass)
           .get();
 
+      // 2. Si no encuentra, intentar con espacio al final
+      if (snapshot.docs.isEmpty) {
+        snapshot = await _firestore.collection('users')
+            .where('username', isEqualTo: '$cleanUser ')
+            .where('password', isEqualTo: cleanPass)
+            .get();
+      }
+
+      QueryDocumentSnapshot<Map<String, dynamic>>? matchedDoc;
       if (snapshot.docs.isNotEmpty) {
-        final data = snapshot.docs.first.data();
-        _currentUser = data;
-        _currentUser!['docId'] = snapshot.docs.first.id;
-        _currentUser!['id'] = (data['id'] ?? data['ID'] ?? snapshot.docs.first.id).toString();
+        matchedDoc = snapshot.docs.first;
+      } else {
+        // 3. Fallback: buscar ignorando mayúsculas y espacios accidentales
+        final allUsers = await _firestore.collection('users').get();
+        for (final doc in allUsers.docs) {
+          final data = doc.data();
+          final uName = (data['username'] ?? '').toString().trim().toLowerCase();
+          final uPass = (data['password'] ?? '').toString().trim();
+          if (uName == cleanUser.toLowerCase() && uPass == cleanPass) {
+            matchedDoc = doc;
+            break;
+          }
+        }
+      }
+
+      if (matchedDoc != null) {
+        final data = matchedDoc.data();
+        _currentUser = Map<String, dynamic>.from(data);
+        _currentUser!['docId'] = matchedDoc.id;
+        _currentUser!['id'] = (data['id'] ?? data['ID'] ?? matchedDoc.id).toString();
         
         if (saveSession) {
           final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('saved_username', username);
-          await prefs.setString('saved_password', password);
+          await prefs.setString('saved_username', cleanUser);
+          await prefs.setString('saved_password', cleanPass);
+          await prefs.setString('login_type', 'credentials');
         }
         
         _startListeners();
@@ -77,17 +139,114 @@ class BarberProvider with ChangeNotifier {
     }
   }
 
+  Future<bool> loginWithGoogle() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final GoogleSignIn googleSignIn = GoogleSignIn();
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+      if (googleUser == null) {
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final AuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      await FirebaseAuth.instance.signInWithCredential(credential);
+
+      final email = googleUser.email.toLowerCase().trim();
+      
+      var snapshot = await _firestore.collection('users')
+          .where('username', isEqualTo: email)
+          .limit(1)
+          .get();
+
+      Map<String, dynamic> userData;
+      String docId;
+
+      if (snapshot.docs.isNotEmpty) {
+        final doc = snapshot.docs.first;
+        docId = doc.id;
+        userData = Map<String, dynamic>.from(doc.data());
+      } else {
+        // Fallback por campo email si existiese
+        var emailSnap = await _firestore.collection('users')
+            .where('email', isEqualTo: email)
+            .limit(1)
+            .get();
+
+        if (emailSnap.docs.isNotEmpty) {
+          final doc = emailSnap.docs.first;
+          docId = doc.id;
+          userData = Map<String, dynamic>.from(doc.data());
+        } else {
+          // Registrar nuevo usuario como cliente automáticamente
+          docId = DateTime.now().millisecondsSinceEpoch.toString();
+          userData = {
+            'id': docId,
+            'name': googleUser.displayName ?? 'Cliente Google',
+            'username': email,
+            'email': email,
+            'role': 'cliente',
+            'photoURL': googleUser.photoUrl ?? '',
+            'ci': 'GOOGLE_USER',
+            'phone': '',
+            'createdAt': FieldValue.serverTimestamp(),
+          };
+
+          await _firestore.collection('users').doc(docId).set(userData);
+          await _firestore.collection('clients').doc(docId).set({
+            ...userData,
+            'totalCuts': 0,
+            'cutsForFree': 0,
+          });
+        }
+      }
+
+      _currentUser = userData;
+      _currentUser!['docId'] = docId;
+      _currentUser!['id'] = (userData['id'] ?? userData['ID'] ?? docId).toString();
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('saved_username', email);
+      await prefs.setString('login_type', 'google');
+
+      _startListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = 'Error al iniciar con Google: $e';
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   void logout() async {
     _currentUser = null;
     _usersSub?.cancel();
     _cutsSub?.cancel();
     _servicesSub?.cancel();
     _clientsSub?.cancel();
+    _turnsSub?.cancel();
     
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('saved_username');
     await prefs.remove('saved_password');
+    await prefs.remove('login_type');
     
+    try {
+      await GoogleSignIn().signOut();
+      await FirebaseAuth.instance.signOut();
+    } catch (_) {}
+
     notifyListeners();
   }
 
@@ -97,7 +256,6 @@ class BarberProvider with ChangeNotifier {
       final docId = _currentUser!['docId'];
       await _firestore.collection('users').doc(docId).update({'password': newPassword});
       
-      // Actualizar en SharedPreferences si estaba guardado
       final prefs = await SharedPreferences.getInstance();
       if (prefs.containsKey('saved_password')) {
         await prefs.setString('saved_password', newPassword);
@@ -116,11 +274,11 @@ class BarberProvider with ChangeNotifier {
     _cutsSub?.cancel();
     _servicesSub?.cancel();
     _clientsSub?.cancel();
+    _turnsSub?.cancel();
 
     _usersSub = _firestore.collection('users').snapshots().listen((snap) {
       _db['users'] = snap.docs.map((doc) => <String, dynamic>{...doc.data(), 'id': doc.id}).toList();
       
-      // Sincronizar _currentUser si sus datos cambiaron en Firestore
       if (_currentUser != null) {
         final myDocId = _currentUser!['docId'];
         final updatedUser = _db['users']?.firstWhere(
@@ -129,7 +287,6 @@ class BarberProvider with ChangeNotifier {
         );
         
         if (updatedUser != null && updatedUser.isNotEmpty) {
-          // Preservar el docId que usamos localmente
           _currentUser = {...updatedUser, 'docId': myDocId};
         }
       }
@@ -138,12 +295,31 @@ class BarberProvider with ChangeNotifier {
     });
 
     _servicesSub = _firestore.collection('services').snapshots().listen((snap) {
-      _db['services'] = snap.docs.map((doc) => <String, dynamic>{...doc.data(), 'id': doc.id}).toList();
+      final list = snap.docs.map((doc) => <String, dynamic>{...doc.data(), 'id': doc.id}).toList();
+      list.sort((a, b) {
+        final priceA = double.tryParse(a['price'].toString()) ?? 0.0;
+        final priceB = double.tryParse(b['price'].toString()) ?? 0.0;
+        return priceB.compareTo(priceA);
+      });
+      _db['services'] = list;
       notifyListeners();
     });
 
     _clientsSub = _firestore.collection('clients').snapshots().listen((snap) {
       _db['clients'] = snap.docs.map((doc) => <String, dynamic>{...doc.data(), 'id': doc.id}).toList();
+      notifyListeners();
+    });
+
+    // Subscripción a Turnos / Reservas
+    _turnsSub = _firestore.collection('turns').snapshots().listen((snap) {
+      final turns = snap.docs.map((doc) {
+        final data = Map<String, dynamic>.from(doc.data());
+        data['id'] = doc.id;
+        return data;
+      }).toList();
+
+      turns.sort((a, b) => (b['scheduledTime'] ?? '').toString().compareTo((a['scheduledTime'] ?? '').toString()));
+      _db['turns'] = turns;
       notifyListeners();
     });
 
@@ -162,9 +338,6 @@ class BarberProvider with ChangeNotifier {
             }
 
             if (dateValue != null) {
-              // 1. Convertimos a UTC puro para tener base cero
-              // 2. Restamos 4 horas (Bolivia)
-              // 3. Convertimos a String y ELIMINAMOS la 'Z' para que el UI no la convierta de nuevo
               final boliviaTime = dateValue.toUtc().subtract(const Duration(hours: 4));
               data['date'] = boliviaTime.toIso8601String().replaceAll('Z', '');
             }
@@ -182,21 +355,20 @@ class BarberProvider with ChangeNotifier {
           var filtered = allCuts.where((cut) {
             final cId = (cut['barberId'] ?? cut['idBarbero'] ?? cut['barberoId'] ?? '').toString();
             final cName = (cut['barberName'] ?? cut['nombreBarbero'] ?? '').toString().toLowerCase().trim();
-            // Filtro flexible por ID (varios campos) o por Nombre exacto
             return (myId != null && cId == myId) || 
                    (myDocId != null && cId == myDocId) || 
                    (myName != null && cName == myName && myName.isNotEmpty);
           }).toList();
 
-          // DEBUG: Si hay cortes en DB pero ninguno coincide con este barbero
           if (filtered.isEmpty && allCuts.isNotEmpty) {
-            _db['cuts'] = allCuts; // Mostrar todos temporalmente para diagnóstico
+            _db['cuts'] = allCuts;
             _errorMessage = "Dato: Se hallaron ${allCuts.length} cortes totales en DB, pero ninguno coincide con tu ID ($myId) o Nombre ($myName).";
           } else {
             _db['cuts'] = filtered;
             _errorMessage = null;
           }
         } else {
+          // Administrador o Cliente: almacena todos los cortes
           _db['cuts'] = allCuts;
           _errorMessage = null;
         }
@@ -210,14 +382,72 @@ class BarberProvider with ChangeNotifier {
     );
   }
 
+  bool _isRecordingCut = false;
   Future<bool> recordCut(Map<String, dynamic> cutData) async {
+    if (_isRecordingCut) return false;
+    _isRecordingCut = true;
     try {
       await _firestore.collection('cuts').add({
         ...cutData,
-        'date': FieldValue.serverTimestamp(), // Hora oficial del servidor
+        'date': FieldValue.serverTimestamp(),
         'barberId': _currentUser?['id'],
         'barberName': _currentUser?['name'],
         'idBarbero': _currentUser?['id'],
+      });
+      return true;
+    } catch (e) {
+      return false;
+    } finally {
+      _isRecordingCut = false;
+    }
+  }
+
+  // Agendar turno / cita de cliente
+  Future<bool> addTurn({
+    required String serviceId,
+    required String serviceName,
+    required double servicePrice,
+    required String barberId,
+    required String barberName,
+    required String date,
+    required String time,
+    required String clientName,
+    required String clientPhone,
+  }) async {
+    try {
+      final turnId = DateTime.now().millisecondsSinceEpoch.toString();
+      final newNumber = (_db['turns']?.length ?? 0) + 1;
+      await _firestore.collection('turns').doc(turnId).set({
+        'id': turnId,
+        'number': newNumber,
+        'serviceId': serviceId,
+        'serviceName': serviceName,
+        'price': servicePrice,
+        'barberId': barberId,
+        'barberName': barberName,
+        'scheduledDate': date,
+        'scheduledTime': '$date $time',
+        'time': time,
+        'clientId': _currentUser?['id'] ?? 'guest',
+        'clientName': clientName,
+        'clientPhone': clientPhone,
+        'clientUsername': _currentUser?['username'] ?? '',
+        'status': 'esperando',
+        'createdAt': FieldValue.serverTimestamp(),
+        'arrivalTime': DateTime.now().toIso8601String(),
+      });
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // Cambiar estado de turno (ej. 'confirmado', 'completado', 'cancelado')
+  Future<bool> updateTurnStatus(String turnId, String newStatus) async {
+    try {
+      await _firestore.collection('turns').doc(turnId).update({
+        'status': newStatus,
+        'updatedAt': FieldValue.serverTimestamp(),
       });
       return true;
     } catch (e) {
@@ -231,6 +461,7 @@ class BarberProvider with ChangeNotifier {
     _cutsSub?.cancel();
     _servicesSub?.cancel();
     _clientsSub?.cancel();
+    _turnsSub?.cancel();
     super.dispose();
   }
 }

@@ -53,7 +53,7 @@ export const Sidebar = ({ user, logout, isOpen, setIsOpen }) => {
         </div>
 
         <nav className="flex-1 px-4 space-y-1.5 mt-4 overflow-y-auto custom-scrollbar">
-          {filteredMenu.map((item, index) => (
+          {filteredMenu.map((item) => (
             <NavLink
               key={item.id}
               to={item.path}

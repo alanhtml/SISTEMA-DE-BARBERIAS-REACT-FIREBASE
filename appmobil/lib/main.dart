@@ -5,6 +5,9 @@ import 'package:provider/provider.dart';
 import 'providers/barber_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'screens/welcome_screen.dart';
+import 'screens/admin_dashboard.dart';
+import 'screens/client_screens.dart';
 
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -12,8 +15,17 @@ import 'package:printing/printing.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  await initializeDateFormatting('es_ES', null);
+  try {
+    await Firebase.initializeApp();
+  } catch (e) {
+    debugPrint("Firebase init error: $e");
+  }
+  try {
+    await initializeDateFormatting('es', null);
+    await initializeDateFormatting('es_ES', null);
+  } catch (e) {
+    debugPrint("DateFormatting init error: $e");
+  }
   runApp(
     MultiProvider(
       providers: [
@@ -24,8 +36,15 @@ void main() async {
   );
 }
 
-class UrbanBarberApp extends StatelessWidget {
+class UrbanBarberApp extends StatefulWidget {
   const UrbanBarberApp({super.key});
+
+  @override
+  State<UrbanBarberApp> createState() => _UrbanBarberAppState();
+}
+
+class _UrbanBarberAppState extends State<UrbanBarberApp> {
+  bool _showLogin = false;
 
   @override
   Widget build(BuildContext context) {
@@ -49,10 +68,24 @@ class UrbanBarberApp extends StatelessWidget {
       ),
       home: Consumer<BarberProvider>(
         builder: (context, provider, _) {
+          // 1. Si no hay sesión activa:
           if (provider.currentUser == null) {
-            return const LoginPage();
+            if (_showLogin) {
+              return LoginPage(onBackToWelcome: () => setState(() => _showLogin = false));
+            }
+            return WelcomeScreen(onContinueToLogin: () => setState(() => _showLogin = true));
           }
-          return const MainNavigation();
+
+          // 2. DETECCIÓN DE ROL:
+          final role = (provider.currentUser?['role'] ?? provider.currentUser?['rol'] ?? '').toString().toLowerCase().trim();
+
+          if (role == 'admin') {
+            return const AdminNavigation();
+          } else if (role == 'cliente') {
+            return const ClientNavigation();
+          } else {
+            return const MainNavigation(); // Barbero
+          }
         },
       ),
     );
@@ -60,7 +93,8 @@ class UrbanBarberApp extends StatelessWidget {
 }
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  final VoidCallback? onBackToWelcome;
+  const LoginPage({super.key, this.onBackToWelcome});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -73,113 +107,191 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<BarberProvider>();
+
     return Scaffold(
+      backgroundColor: Colors.black,
+      resizeToAvoidBottomInset: true,
       body: Container(
+        width: double.infinity,
+        height: double.infinity,
         decoration: BoxDecoration(
           gradient: RadialGradient(
             center: Alignment.topLeft,
             radius: 1.5,
-            colors: [luxuryGold.withOpacity(0.15), Colors.black],
+            colors: [luxuryGold.withValues(alpha: 0.15), Colors.black],
           )
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(40.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
+        child: SafeArea(
+          child: Stack(
             children: [
+              if (widget.onBackToWelcome != null)
+                Positioned(
+                  top: 10,
+                  left: 15,
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white70, size: 20),
+                    onPressed: widget.onBackToWelcome,
+                  ),
+                ),
               Center(
-                child: Container(
-                  width: 140,
-                  height: 140,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white.withOpacity(0.1), width: 2),
-                    boxShadow: [
-                      BoxShadow(color: luxuryGold.withOpacity(0.2), blurRadius: 30, spreadRadius: 5)
-                    ]
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 20.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 130,
+                          height: 130,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 2),
+                            boxShadow: [
+                              BoxShadow(color: luxuryGold.withValues(alpha: 0.2), blurRadius: 30, spreadRadius: 5)
+                            ]
+                          ),
+                          child: ClipOval(
+                            child: Transform.scale(
+                              scale: 1.15,
+                              child: Image.asset('assets/logo.png', fit: BoxFit.cover),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Center(
+                        child: Column(
+                          children: [
+                            Text('URBAN BARBER', 
+                              style: GoogleFonts.anton(fontSize: 28, color: Colors.white, letterSpacing: 5)
+                            ),
+                            const Text('SISTEMA DE GESTIÓN ELITE', 
+                              style: TextStyle(letterSpacing: 4, fontWeight: FontWeight.bold, fontSize: 9, color: Colors.white38)
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 40),
+                      TextField(
+                        controller: _userController,
+                        autocorrect: false,
+                        enableSuggestions: false,
+                        textCapitalization: TextCapitalization.none,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                        decoration: InputDecoration(
+                          hintText: 'USUARIO O CORREO',
+                          prefixIcon: const Icon(Icons.person_outline, color: luxuryGold, size: 22),
+                          filled: true,
+                          fillColor: Colors.white.withValues(alpha: 0.05),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                          contentPadding: const EdgeInsets.symmetric(vertical: 20),
+                        ),
+                      ),
+                      const SizedBox(height: 15),
+                      TextField(
+                        controller: _passController,
+                        obscureText: true,
+                        autocorrect: false,
+                        enableSuggestions: false,
+                        textCapitalization: TextCapitalization.none,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                        decoration: InputDecoration(
+                          hintText: 'CONTRASEÑA',
+                          prefixIcon: const Icon(Icons.lock_outline, color: luxuryGold, size: 22),
+                          filled: true,
+                          fillColor: Colors.white.withValues(alpha: 0.05),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                          contentPadding: const EdgeInsets.symmetric(vertical: 20),
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 60,
+                        child: ElevatedButton(
+                          onPressed: provider.isLoading 
+                            ? null 
+                            : () {
+                              provider.login(
+                                _userController.text.trim(), 
+                                _passController.text.trim(),
+                              );
+                            },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: luxuryGold,
+                            foregroundColor: Colors.black,
+                            elevation: 15,
+                            shadowColor: luxuryGold.withValues(alpha: 0.4),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          child: provider.isLoading
+                            ? const CircularProgressIndicator(color: Colors.black)
+                            : const Text('ACCEDER AL PANEL', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 13)),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+
+                      // INICIO CON GOOGLE
+                      SizedBox(
+                        width: double.infinity,
+                        height: 60,
+                        child: OutlinedButton(
+                          onPressed: provider.isLoading
+                              ? null
+                              : () async {
+                                  final messenger = ScaffoldMessenger.of(context);
+                                  final ok = await provider.loginWithGoogle();
+                                  if (!ok && provider.errorMessage != null) {
+                                    messenger.showSnackBar(
+                                      SnackBar(
+                                        backgroundColor: const Color(0xFF250808),
+                                        content: Text(provider.errorMessage!, style: const TextStyle(color: Colors.redAccent)),
+                                      ),
+                                    );
+                                  }
+                                },
+                          style: OutlinedButton.styleFrom(
+                            backgroundColor: const Color(0xFF101010),
+                            side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Image.network(
+                                'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
+                                width: 18,
+                                height: 18,
+                                errorBuilder: (_, __, ___) => const Icon(Icons.g_mobiledata_rounded, color: Colors.white, size: 24),
+                              ),
+                              const SizedBox(width: 10),
+                              const Text(
+                                'CONTINUAR CON GOOGLE',
+                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, letterSpacing: 1.5, fontSize: 11),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      if (provider.errorMessage != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 20),
+                          child: Center(
+                            child: Text(
+                              provider.errorMessage!.toUpperCase(),
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(color: luxuryGold, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
-                  child: ClipOval(
-                    child: Transform.scale(
-                      scale: 1.15,
-                      child: Image.asset('assets/logo.png', fit: BoxFit.cover),
-                    ),
-                  ),
                 ),
               ),
-              const SizedBox(height: 20),
-              Center(
-                child: Column(
-                  children: [
-                    Text('URBAN BARBER', 
-                      style: GoogleFonts.anton(fontSize: 28, color: Colors.white, letterSpacing: 5)
-                    ),
-                    const Text('SISTEMA DE GESTIÓN ELITE', 
-                      style: TextStyle(letterSpacing: 4, fontWeight: FontWeight.bold, fontSize: 9, color: Colors.white38)
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 60),
-              TextField(
-                controller: _userController,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-                decoration: InputDecoration(
-                  hintText: 'USUARIO',
-                  prefixIcon: const Icon(Icons.person_outline, color: luxuryGold, size: 22),
-                  filled: true,
-                  fillColor: Colors.white.withOpacity(0.05),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                  contentPadding: const EdgeInsets.symmetric(vertical: 20),
-                ),
-              ),
-              const SizedBox(height: 15),
-              TextField(
-                controller: _passController,
-                obscureText: true,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-                decoration: InputDecoration(
-                  hintText: 'CONTRASEÑA',
-                  prefixIcon: const Icon(Icons.lock_outline, color: luxuryGold, size: 22),
-                  filled: true,
-                  fillColor: Colors.white.withOpacity(0.05),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                  contentPadding: const EdgeInsets.symmetric(vertical: 20),
-                ),
-              ),
-              const SizedBox(height: 35),
-              SizedBox(
-                width: double.infinity,
-                height: 65,
-                child: ElevatedButton(
-                  onPressed: context.watch<BarberProvider>().isLoading 
-                    ? null 
-                    : () {
-                      context.read<BarberProvider>().login(_userController.text, _passController.text);
-                    },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: luxuryGold,
-                    foregroundColor: Colors.black,
-                    elevation: 15,
-                    shadowColor: luxuryGold.withOpacity(0.4),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  child: context.watch<BarberProvider>().isLoading
-                    ? const CircularProgressIndicator(color: Colors.black)
-                    : const Text('ACCEDER AL PANEL', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
-                ),
-              ),
-              if (context.watch<BarberProvider>().errorMessage != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 25),
-                  child: Center(
-                    child: Text(
-                      context.watch<BarberProvider>().errorMessage!.toUpperCase(),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: luxuryGold, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1),
-                    ),
-                  ),
-                ),
             ],
           ),
         ),
@@ -212,13 +324,13 @@ class _MainNavigationState extends State<MainNavigation> {
       body: _pages[_selectedIndex],
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          border: Border(top: BorderSide(color: Colors.white.withOpacity(0.05), width: 1)),
+          border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.05), width: 1)),
         ),
         child: NavigationBar(
           selectedIndex: _selectedIndex,
           onDestinationSelected: (index) => setState(() => _selectedIndex = index),
           backgroundColor: const Color(0xFF000000),
-          indicatorColor: luxuryGold.withOpacity(0.15),
+          indicatorColor: luxuryGold.withValues(alpha: 0.15),
           labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
           height: 70,
           destinations: const [
@@ -277,8 +389,11 @@ class BarberDashboard extends StatelessWidget {
       dayCuts.sort((a, b) => a['date'].toString().compareTo(b['date'].toString()));
       for (int i = 0; i < dayCuts.length; i++) {
         double price = double.tryParse(dayCuts[i]['price'].toString()) ?? 0;
-        if (i == 0) commission += price;
-        else commission += price * 0.5;
+        if (i == 0) {
+          commission += price;
+        } else {
+          commission += price * 0.5;
+        }
       }
     });
 
@@ -324,7 +439,7 @@ class BarberDashboard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(15),
               margin: const EdgeInsets.only(bottom: 25),
-              decoration: BoxDecoration(color: luxuryGold.withOpacity(0.1), borderRadius: BorderRadius.circular(12), border: Border.all(color: luxuryGold.withOpacity(0.2))),
+              decoration: BoxDecoration(color: luxuryGold.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12), border: Border.all(color: luxuryGold.withValues(alpha: 0.2))),
               child: Text(provider.errorMessage!, style: const TextStyle(color: luxuryGold, fontSize: 10, fontWeight: FontWeight.bold)),
             ),
           
@@ -368,7 +483,7 @@ class BarberDashboard extends StatelessWidget {
               padding: const EdgeInsets.all(60),
               child: Column(
                 children: [
-                  Icon(Icons.content_cut_rounded, size: 40, color: Colors.white.withOpacity(0.03)),
+                  Icon(Icons.content_cut_rounded, size: 40, color: Colors.white.withValues(alpha: 0.03)),
                   const SizedBox(height: 15),
                   const Text('SIN REGISTROS HOY', style: TextStyle(color: Colors.white12, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
                 ],
@@ -386,8 +501,8 @@ class BarberDashboard extends StatelessWidget {
       decoration: BoxDecoration(
         color: featured ? const Color(0xFF0F0F0F) : const Color(0xFF070707),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: featured ? luxuryGold.withOpacity(0.3) : Colors.white.withOpacity(0.05)),
-        boxShadow: featured ? [BoxShadow(color: luxuryGold.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, 10))] : null,
+        border: Border.all(color: featured ? luxuryGold.withValues(alpha: 0.3) : Colors.white.withValues(alpha: 0.05)),
+        boxShadow: featured ? [BoxShadow(color: luxuryGold.withValues(alpha: 0.1), blurRadius: 20, offset: const Offset(0, 10))] : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -412,13 +527,13 @@ class BarberDashboard extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF0A0A0A),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.03)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.03)),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: luxuryGold.withOpacity(0.05), borderRadius: BorderRadius.circular(10)),
+            decoration: BoxDecoration(color: luxuryGold.withValues(alpha: 0.05), borderRadius: BorderRadius.circular(10)),
             child: const Icon(Icons.content_cut_rounded, size: 18, color: luxuryGold),
           ),
           const SizedBox(width: 15),
@@ -457,7 +572,12 @@ class _QuickCutPageState extends State<QuickCutPage> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<BarberProvider>();
-    final services = provider.db['services'] ?? [];
+    final services = List<Map<String, dynamic>>.from(provider.db['services'] ?? [])
+      ..sort((a, b) {
+        final priceA = double.tryParse(a['price'].toString()) ?? 0.0;
+        final priceB = double.tryParse(b['price'].toString()) ?? 0.0;
+        return priceB.compareTo(priceA); // De mayor a menor
+      });
     final clients = provider.db['clients'] ?? [];
 
     final filteredClients = _searchController.text.length > 1
@@ -467,150 +587,376 @@ class _QuickCutPageState extends State<QuickCutPage> {
         : [];
 
     return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(30.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('NUEVO', style: GoogleFonts.anton(fontSize: 44, height: 0.9, letterSpacing: 1)),
-            Text('SERVICIO', style: GoogleFonts.anton(fontSize: 44, color: luxuryGold, height: 0.9, letterSpacing: 1)),
-            const SizedBox(height: 5),
-            const Text('REGISTRO INSTANTÁNEO DE CORTE', style: TextStyle(fontSize: 10, color: Colors.white38, fontWeight: FontWeight.w900, letterSpacing: 1.5)),
-            
-            const SizedBox(height: 45),
-            
-            _buildInputLabel('1. SELECCIONAR SERVICIO'),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFF111111),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.white.withOpacity(0.05)),
-              ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  isExpanded: true,
-                  value: _selectedServiceId,
-                  hint: const Text('CATÁLOGO DE SERVICIOS...', style: TextStyle(fontSize: 12, color: Colors.white24, fontWeight: FontWeight.bold)),
-                  dropdownColor: const Color(0xFF111111),
-                  items: services.map((s) {
-                    return DropdownMenuItem<String>(
-                      value: s['id'].toString(),
-                      child: Text('${s['name'].toString().toUpperCase()} - Bs. ${s['price']}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900)),
-                    );
-                  }).toList(),
-                  onChanged: (v) => setState(() => _selectedServiceId = v),
-                ),
-              ),
-            ),
-            
-            const SizedBox(height: 30),
-            
-            _buildInputLabel('2. CLIENTE (OPCIONAL)'),
-            TextField(
-              controller: _searchController,
-              onChanged: (v) => setState(() {}),
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-              decoration: InputDecoration(
-                hintText: 'BUSCAR POR NOMBRE O CI...',
-                hintStyle: const TextStyle(fontSize: 12, color: Colors.white24, fontWeight: FontWeight.bold),
-                prefixIcon: const Icon(Icons.search_rounded, color: luxuryGold, size: 22),
-                filled: true,
-                fillColor: const Color(0xFF111111),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                contentPadding: const EdgeInsets.symmetric(vertical: 18),
-              ),
-            ),
-            
-            if (filteredClients.isNotEmpty)
-              Container(
-                margin: const EdgeInsets.only(top: 10),
-                constraints: const BoxConstraints(maxHeight: 160),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF161616),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white.withOpacity(0.1)),
-                ),
-                child: ListView.separated(
-                  shrinkWrap: true,
-                  itemCount: filteredClients.length,
-                  separatorBuilder: (context, index) => Divider(height: 1, color: Colors.white.withOpacity(0.05)),
-                  itemBuilder: (context, index) {
-                    final c = filteredClients[index];
-                    return ListTile(
-                      title: Text(c['name'].toString().toUpperCase(), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900)),
-                      subtitle: Text('CI: ${c['ci'] ?? 'N/A'}', style: const TextStyle(fontSize: 10, color: Colors.white24)),
-                      onTap: () {
-                        setState(() {
-                          _selectedClientId = c['id'].toString();
-                          _searchController.text = c['name'];
-                        });
-                      },
-                    );
-                  },
-                ),
-              ),
-            
-            const Spacer(),
-            
-            SizedBox(
-              width: double.infinity,
-              height: 70,
-              child: ElevatedButton(
-                onPressed: _isSaving ? null : () async {
-                  if (_selectedServiceId == null) return;
-                  setState(() => _isSaving = true);
-                  
-                  final service = services.firstWhere((s) => s['id'].toString() == _selectedServiceId);
-                  final client = _selectedClientId == 'visitor' 
-                    ? {'name': 'Visitante', 'id': 'visitor'}
-                    : clients.firstWhere((c) => c['id'].toString() == _selectedClientId);
-
-                  final success = await provider.recordCut({
-                    'serviceId': service['id'],
-                    'serviceName': service['name'],
-                    'price': service['price'],
-                    'clientId': client['id'],
-                    'clientName': client['name'],
-                  });
-
-                  setState(() => _isSaving = false);
-                  if (success) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        backgroundColor: Colors.black,
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                        content: Row(
-                          children: [
-                            const Icon(Icons.check_circle, color: Colors.greenAccent),
-                            const SizedBox(width: 15),
-                            Text('${service['name'].toString().toUpperCase()} REGISTRADO', style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1)),
-                          ],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.all(30.0),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight - 60),
+              child: IntrinsicHeight(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('NUEVO', style: GoogleFonts.anton(fontSize: 44, height: 0.9, letterSpacing: 1)),
+                    Text('SERVICIO', style: GoogleFonts.anton(fontSize: 44, color: luxuryGold, height: 0.9, letterSpacing: 1)),
+                    const SizedBox(height: 5),
+                    const Text('REGISTRO INSTANTÁNEO DE CORTE', style: TextStyle(fontSize: 10, color: Colors.white38, fontWeight: FontWeight.w900, letterSpacing: 1.5)),
+                    
+                    const SizedBox(height: 45),
+                    
+                    _buildInputLabel('1. SELECCIONAR SERVICIO'),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF111111),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          isExpanded: true,
+                          value: _selectedServiceId,
+                          hint: const Text('CATÁLOGO DE SERVICIOS...', style: TextStyle(fontSize: 12, color: Colors.white24, fontWeight: FontWeight.bold)),
+                          dropdownColor: const Color(0xFF111111),
+                          items: services.map((s) {
+                            return DropdownMenuItem<String>(
+                              value: s['id'].toString(),
+                              child: Text('${s['name'].toString().toUpperCase()} - Bs. ${s['price']}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900)),
+                            );
+                          }).toList(),
+                          onChanged: (v) => setState(() => _selectedServiceId = v),
                         ),
-                      )
-                    );
-                    setState(() {
-                      _selectedServiceId = null;
-                      _selectedClientId = 'visitor';
-                      _searchController.clear();
-                    });
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: luxuryGold,
-                  foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                  elevation: 15,
-                  shadowColor: luxuryGold.withOpacity(0.4),
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 30),
+                    
+                    _buildInputLabel('2. CLIENTE (OPCIONAL)'),
+                    TextField(
+                      controller: _searchController,
+                      onChanged: (v) => setState(() {}),
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                      decoration: InputDecoration(
+                        hintText: 'BUSCAR POR NOMBRE O CI...',
+                        hintStyle: const TextStyle(fontSize: 12, color: Colors.white24, fontWeight: FontWeight.bold),
+                        prefixIcon: const Icon(Icons.search_rounded, color: luxuryGold, size: 22),
+                        filled: true,
+                        fillColor: const Color(0xFF111111),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                        contentPadding: const EdgeInsets.symmetric(vertical: 18),
+                      ),
+                    ),
+                    
+                    if (filteredClients.isNotEmpty)
+                      Container(
+                        margin: const EdgeInsets.only(top: 10),
+                        constraints: const BoxConstraints(maxHeight: 160),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF161616),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                        ),
+                        child: ListView.separated(
+                          shrinkWrap: true,
+                          itemCount: filteredClients.length,
+                          separatorBuilder: (context, index) => Divider(height: 1, color: Colors.white.withValues(alpha: 0.05)),
+                          itemBuilder: (context, index) {
+                            final c = filteredClients[index];
+                            return ListTile(
+                              title: Text(c['name'].toString().toUpperCase(), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900)),
+                              subtitle: Text('CI: ${c['ci'] ?? 'N/A'}', style: const TextStyle(fontSize: 10, color: Colors.white24)),
+                              onTap: () {
+                                setState(() {
+                                  _selectedClientId = c['id'].toString();
+                                  _searchController.text = c['name'];
+                                });
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    
+                    const Spacer(),
+                    const SizedBox(height: 25),
+                    
+                    SizedBox(
+                      width: double.infinity,
+                      height: 70,
+                      child: ElevatedButton(
+                        onPressed: _isSaving ? null : () async {
+                          if (_selectedServiceId == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                backgroundColor: const Color(0xFF1E1E1E),
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  side: BorderSide(color: luxuryGold.withValues(alpha: 0.3)),
+                                ),
+                                content: const Row(
+                                  children: [
+                                    Icon(Icons.warning_amber_rounded, color: luxuryGold),
+                                    SizedBox(width: 12),
+                                    Text(
+                                      'SELECCIONA UN SERVICIO PRIMERO',
+                                      style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1, fontSize: 12),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                            return;
+                          }
+
+                          if (_isSaving) return;
+
+                          final service = services.firstWhere((s) => s['id'].toString() == _selectedServiceId);
+                          final client = _selectedClientId == 'visitor' 
+                            ? {'name': 'Visitante', 'id': 'visitor'}
+                            : clients.firstWhere((c) => c['id'].toString() == _selectedClientId);
+
+                          // Doble confirmación modal
+                          final messenger = ScaffoldMessenger.of(context);
+                          final confirmed = await showDialog<bool>(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (dialogContext) {
+                              return AlertDialog(
+                                backgroundColor: const Color(0xFF111111),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                  side: BorderSide(color: luxuryGold.withValues(alpha: 0.3), width: 1.5),
+                                ),
+                                titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 10),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                                actionsPadding: const EdgeInsets.fromLTRB(16, 10, 16, 20),
+                                title: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: luxuryGold.withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: const Icon(Icons.help_outline_rounded, color: luxuryGold, size: 24),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'CONFIRMAR CORTE',
+                                            style: GoogleFonts.anton(fontSize: 20, color: Colors.white, letterSpacing: 1),
+                                          ),
+                                          const Text(
+                                            '¿DESEAS REGISTRAR ESTE SERVICIO?',
+                                            style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.white38, letterSpacing: 1),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                content: Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF181818),
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                                  ),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          const Text('SERVICIO:', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white38, letterSpacing: 1)),
+                                          Flexible(
+                                            child: Text(
+                                              service['name'].toString().toUpperCase(),
+                                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Colors.white),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 10),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          const Text('PRECIO:', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white38, letterSpacing: 1)),
+                                          Text(
+                                            'Bs. ${service['price']}',
+                                            style: GoogleFonts.anton(fontSize: 18, color: luxuryGold, letterSpacing: 1),
+                                          ),
+                                        ],
+                                      ),
+                                      const Divider(color: Colors.white10, height: 20),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          const Text('CLIENTE:', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white38, letterSpacing: 1)),
+                                          Flexible(
+                                            child: Text(
+                                              client['name'].toString().toUpperCase(),
+                                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Colors.white70),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                actions: [
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: OutlinedButton(
+                                          onPressed: () => Navigator.of(dialogContext).pop(false),
+                                          style: OutlinedButton.styleFrom(
+                                            foregroundColor: Colors.white60,
+                                            side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+                                            padding: const EdgeInsets.symmetric(vertical: 14),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                          ),
+                                          child: const Text('CANCELAR', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: ElevatedButton(
+                                          onPressed: () => Navigator.of(dialogContext).pop(true),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: luxuryGold,
+                                            foregroundColor: Colors.black,
+                                            padding: const EdgeInsets.symmetric(vertical: 14),
+                                            elevation: 5,
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                          ),
+                                          child: const Text('SÍ, REGISTRAR', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+
+                          if (confirmed != true) return;
+                          if (!mounted) return;
+
+                          // Bloqueo inmediato contra duplicación
+                          if (_isSaving) return;
+                          setState(() => _isSaving = true);
+                          try {
+                            final success = await provider.recordCut({
+                              'serviceId': service['id'],
+                              'serviceName': service['name'],
+                              'price': service['price'],
+                              'clientId': client['id'],
+                              'clientName': client['name'],
+                            });
+
+                            if (!mounted) return;
+
+                            if (success) {
+                              messenger.showSnackBar(
+                                SnackBar(
+                                  backgroundColor: Colors.black,
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    side: const BorderSide(color: Colors.greenAccent, width: 1),
+                                  ),
+                                  content: Row(
+                                    children: [
+                                      const Icon(Icons.check_circle, color: Colors.greenAccent),
+                                      const SizedBox(width: 15),
+                                      Expanded(
+                                        child: Text(
+                                          '${service['name'].toString().toUpperCase()} REGISTRADO CON ÉXITO',
+                                          style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1, fontSize: 12),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                              setState(() {
+                                _selectedServiceId = null;
+                                _selectedClientId = 'visitor';
+                                _searchController.clear();
+                              });
+                            } else {
+                              messenger.showSnackBar(
+                                SnackBar(
+                                  backgroundColor: const Color(0xFF2A0808),
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    side: const BorderSide(color: Colors.redAccent, width: 1),
+                                  ),
+                                  content: const Row(
+                                    children: [
+                                      Icon(Icons.error_outline, color: Colors.redAccent),
+                                      SizedBox(width: 15),
+                                      Expanded(
+                                        child: Text(
+                                          'NO SE PUDO REGISTRAR EL SERVICIO. INTENTA DE NUEVO.',
+                                          style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1, fontSize: 12),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }
+                          } finally {
+                            if (mounted) {
+                              setState(() => _isSaving = false);
+                            }
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _isSaving ? luxuryGold.withValues(alpha: 0.5) : luxuryGold,
+                          foregroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                          elevation: _isSaving ? 0 : 15,
+                          shadowColor: luxuryGold.withValues(alpha: 0.4),
+                        ),
+                        child: _isSaving 
+                          ? const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  width: 22,
+                                  height: 22,
+                                  child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2.5),
+                                ),
+                                SizedBox(width: 14),
+                                Text(
+                                  'REGISTRANDO...',
+                                  style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14),
+                                ),
+                              ],
+                            )
+                          : const Text(
+                              'FINALIZAR Y REGISTRAR',
+                              style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14),
+                            ),
+                      ),
+                    )
+                  ],
                 ),
-                child: _isSaving 
-                  ? const CircularProgressIndicator(color: Colors.black)
-                  : const Text('FINALIZAR Y REGISTRAR', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 14)),
               ),
-            )
-          ],
-        ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -680,7 +1026,7 @@ class _BarberReportsState extends State<BarberReports> {
               surface: Color(0xFF111111),
               onSurface: Colors.white,
             ),
-            dialogBackgroundColor: const Color(0xFF000000),
+            dialogTheme: const DialogThemeData(backgroundColor: Color(0xFF000000)),
           ),
           child: child!,
         );
@@ -701,8 +1047,10 @@ class _BarberReportsState extends State<BarberReports> {
     final allCuts = provider.db['cuts'] ?? [];
     
     final filteredCuts = allCuts.where((cut) {
+      if (cut['date'] == null) return false;
       final dateStr = cut['date'].toString().split('T')[0];
-      final cutDate = DateTime.parse(dateStr);
+      final cutDate = DateTime.tryParse(dateStr);
+      if (cutDate == null) return false;
       final start = DateTime(_startDate!.year, _startDate!.month, _startDate!.day);
       final end = DateTime(_endDate!.year, _endDate!.month, _endDate!.day);
       return (cutDate.isAtSameMomentAs(start) || cutDate.isAfter(start)) &&
@@ -723,8 +1071,11 @@ class _BarberReportsState extends State<BarberReports> {
       dayCuts.sort((a, b) => a['date'].toString().compareTo(b['date'].toString()));
       for (int i = 0; i < dayCuts.length; i++) {
         double price = double.tryParse(dayCuts[i]['price'].toString()) ?? 0;
-        if (i == 0) commission += price;
-        else commission += price * 0.5;
+        if (i == 0) {
+          commission += price;
+        } else {
+          commission += price * 0.5;
+        }
       }
     });
 
@@ -752,13 +1103,17 @@ class _BarberReportsState extends State<BarberReports> {
               dayCuts.sort((a, b) => a['date'].toString().compareTo(b['date'].toString()));
               for (int i = 0; i < dayCuts.length; i++) {
                 double p = double.tryParse(dayCuts[i]['price'].toString()) ?? 0;
-                if (i == 0) dayComm += p; else dayComm += p * 0.5;
+                if (i == 0) {
+                  dayComm += p;
+                } else {
+                  dayComm += p * 0.5;
+                }
               }
               return GestureDetector(
                 onTap: () => setState(() => _selectedDateKey = dateKey),
                 child: _buildDayItem(dateKey, dayCuts.length, dayTotal, dayComm)
               );
-            }).toList(),
+            }),
           ] else ...[
             _buildDetailedHistoryView(cutsByDate[_selectedDateKey!] ?? []),
           ],
@@ -815,7 +1170,7 @@ class _BarberReportsState extends State<BarberReports> {
           onTap: () => _selectDateRange(context),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(color: Colors.white.withOpacity(0.05), borderRadius: BorderRadius.circular(8)),
+            decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.05), borderRadius: BorderRadius.circular(8)),
             child: Text(
               '${DateFormat('dd/MM').format(_startDate!)} - ${DateFormat('dd/MM').format(_endDate!)}',
               style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white38),
@@ -832,9 +1187,9 @@ class _BarberReportsState extends State<BarberReports> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
         decoration: BoxDecoration(
-          color: luxuryGold.withOpacity(0.08),
+          color: luxuryGold.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: luxuryGold.withOpacity(0.15))
+          border: Border.all(color: luxuryGold.withValues(alpha: 0.15))
         ),
         child: Text(label, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: luxuryGold, letterSpacing: 1)),
       ),
@@ -851,8 +1206,8 @@ class _BarberReportsState extends State<BarberReports> {
           colors: [const Color(0xFF111111), const Color(0xFF050505)]
         ),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 30)],
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 30)],
       ),
       child: Column(
         children: [
@@ -883,7 +1238,11 @@ class _BarberReportsState extends State<BarberReports> {
     for (int i = 0; i < sortedByTime.length; i++) {
       double p = double.tryParse(sortedByTime[i]['price'].toString()) ?? 0;
       dayTotal += p;
-      if (i == 0) dayComm += p; else dayComm += p * 0.5;
+      if (i == 0) {
+        dayComm += p;
+      } else {
+        dayComm += p * 0.5;
+      }
     }
 
     return Column(
@@ -894,7 +1253,7 @@ class _BarberReportsState extends State<BarberReports> {
           decoration: BoxDecoration(
             color: const Color(0xFF0A0A0A), 
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withOpacity(0.05))
+            border: Border.all(color: Colors.white.withValues(alpha: 0.05))
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -914,7 +1273,7 @@ class _BarberReportsState extends State<BarberReports> {
           decoration: BoxDecoration(
             color: const Color(0xFF070707),
             borderRadius: BorderRadius.circular(15),
-            border: Border.all(color: Colors.white.withOpacity(0.03))
+            border: Border.all(color: Colors.white.withValues(alpha: 0.03))
           ),
           child: Row(
             children: [
@@ -935,7 +1294,7 @@ class _BarberReportsState extends State<BarberReports> {
               )
             ],
           ),
-        )).toList(),
+        )),
       ],
     );
   }
@@ -969,7 +1328,7 @@ class _BarberReportsState extends State<BarberReports> {
       decoration: BoxDecoration(
         color: const Color(0xFF0A0A0A),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1086,7 +1445,7 @@ class _BarberProfileState extends State<BarberProfile> {
               children: [
                 CircleAvatar(
                   radius: 55,
-                  backgroundColor: luxuryGold.withOpacity(0.1),
+                  backgroundColor: luxuryGold.withValues(alpha: 0.1),
                   child: const Icon(Icons.person_rounded, size: 60, color: luxuryGold),
                 ),
                 Positioned(
@@ -1131,12 +1490,14 @@ class _BarberProfileState extends State<BarberProfile> {
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('La contraseña es demasiado corta')));
                     return;
                   }
+                  final messenger = ScaffoldMessenger.of(context);
                   setState(() => _isUpdating = true);
                   final success = await provider.changePassword(_passController.text);
+                  if (!mounted) return;
                   setState(() => _isUpdating = false);
                   if (success) {
                     _passController.clear();
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(backgroundColor: Colors.green, content: Text('CONTRASEÑA ACTUALIZADA')));
+                    messenger.showSnackBar(const SnackBar(backgroundColor: Colors.green, content: Text('CONTRASEÑA ACTUALIZADA')));
                   }
                 },
               ),
@@ -1172,7 +1533,7 @@ class _BarberProfileState extends State<BarberProfile> {
       decoration: BoxDecoration(
         color: const Color(0xFF0A0A0A),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.04)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.04)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

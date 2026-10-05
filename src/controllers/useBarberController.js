@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import firebase, { firestore, storageRef, auth } from '../firebase/config';
+import { useState, useEffect, useRef } from 'react';
+import firebase, { firestore, auth } from '../firebase/config';
 import { Store } from '../models/Store';
 
 export const useBarberController = () => {
@@ -47,7 +47,7 @@ export const useBarberController = () => {
                   if (parts[8] === 'a.m.' && hour === 12) hour = 0;
                   const dateObj = new Date(year, month, day, hour, min, sec);
                   if (!isNaN(dateObj)) normalizedItem[key] = dateObj.toISOString();
-                } catch (e) {
+                } catch (_e) {
                   console.error("Error parsing date:", val);
                 }
               }
@@ -230,8 +230,19 @@ export const useBarberController = () => {
     notify('Servicio completado');
   };
 
+  // Prevención de doble clic concurrente mediante useRef
+  const lastCutRef = useRef({ timestamp: 0, key: '' });
+
   const recordCut = async (data) => {
     try {
+      const cutKey = `${data.barberId}_${data.serviceId}_${data.clientId}`;
+      const now = Date.now();
+      if (now - lastCutRef.current.timestamp < 2000 && lastCutRef.current.key === cutKey) {
+        console.warn("Prevención de duplicado: Doble clic bloqueado en recordCut");
+        return true;
+      }
+      lastCutRef.current = { timestamp: now, key: cutKey };
+
       const barber = db.users.find(u => String(u.id) === String(data.barberId));
       const service = db.services.find(s => String(s.id) === String(data.serviceId));
       let client = null;
@@ -341,7 +352,7 @@ export const useBarberController = () => {
       localStorage.setItem('barber_user', JSON.stringify(localUser));
       notify('Bienvenido ' + localUser.name);
       return true;
-    } catch (error) {
+    } catch (_error) {
       notify('Error de autenticación', 'error');
       return false;
     }
@@ -358,7 +369,7 @@ export const useBarberController = () => {
       localStorage.setItem('barber_user', JSON.stringify(fullUser));
       notify('Registro completado');
       return true;
-    } catch (error) {
+    } catch (_error) {
       notify('Error al finalizar registro', 'error');
       return false;
     }
@@ -433,7 +444,7 @@ export const useBarberController = () => {
         await firestore.collection('metadata').doc('global').update({ currentTurn: 0 });
         notify('Sistema reiniciado correctamente');
         return true;
-      } catch (error) {
+      } catch (_error) {
         notify('Error al reiniciar sistema', 'error');
         return false;
       }

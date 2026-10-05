@@ -30,7 +30,7 @@ export const DashboardView = ({ db, user }) => {
       try {
         const d = new Date(dateStr);
         return getLocalDateString(d) === todayISO;
-      } catch (e) {
+      } catch (_e) {
         return false;
       }
     };
